@@ -364,7 +364,10 @@ impl App {
                 self.notification_opt = Some(notification);
             }
             Message::OpenDesktopId(desktop_id) => {
-                return self.open_desktop_id(desktop_id);
+                #[cfg(feature = "desktop")]
+                {
+                    self.open_desktop_id(desktop_id);
+                }
             }
             Message::Operation(kind, backend_name, package_id, info) => {
                 self.operation(Operation {

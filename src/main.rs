@@ -21,6 +21,7 @@ use cosmic::{
     theme,
     widget::{self},
 };
+use freedesktop_desktop_entry as fde;
 use localize::LANGUAGE_SORTER;
 use rayon::prelude::*;
 use std::{
@@ -458,58 +459,61 @@ pub struct App {
 }
 
 impl App {
-    fn open_desktop_id(&self, mut desktop_id: String) -> Task<Message> {
-        Task::perform(
-            async move {
-                tokio::task::spawn_blocking(move || {
-                    if !desktop_id.ends_with(".desktop") {
-                        desktop_id.push_str(".desktop");
-                    }
-                    let xdg_dirs = xdg::BaseDirectories::with_prefix("applications");
-                    let path = match xdg_dirs.find_data_file(&desktop_id) {
-                        Some(some) => some,
-                        None => {
-                            log::warn!("failed to find desktop file for {:?}", desktop_id);
-                            return None;
-                        }
-                    };
-                    let entry = match freedesktop_entry_parser::parse_entry(&path) {
-                        Ok(ok) => ok,
-                        Err(err) => {
-                            log::warn!("failed to read desktop file {:?}: {}", path, err);
-                            return None;
-                        }
-                    };
-                    //TODO: handle Terminal=true
-                    let Some(exec) = entry
-                        .get("Desktop Entry", "Exec")
-                        .and_then(|attr| attr.first())
-                    else {
-                        log::warn!("no exec section in {:?}", path);
-                        return None;
-                    };
-                    //TODO: use libcosmic for loading desktop data
-                    Some((exec.to_string(), desktop_id))
-                })
+    #[cfg(feature = "desktop")]
+    fn open_desktop_id(&self, desktop_id: String) {
+        #[derive(Debug, Clone, Copy)]
+        pub enum GpuPreference {
+            Default,
+            NonDefault,
+        }
+
+        async fn try_get_gpu_envs(gpu: GpuPreference) -> Option<HashMap<String, String>> {
+            let connection = zbus::Connection::system().await.ok()?;
+            let proxy = switcheroo_control::SwitcherooControlProxy::new(&connection)
                 .await
-                .unwrap_or(None)
-            },
-            |result| {
-                #[cfg(feature = "desktop")]
-                if let Some((exec, desktop_id)) = result {
+                .ok()?;
+            let gpus = proxy.get_gpus().await.ok()?;
+            match gpu {
+                GpuPreference::Default => gpus.into_iter().find(|gpu| gpu.default),
+                GpuPreference::NonDefault => gpus.into_iter().find(|gpu| !gpu.default),
+            }
+            .map(|gpu| gpu.environment)
+        }
+
+        tokio::task::spawn_blocking(move || {
+            let desktop_id = desktop_id.strip_suffix(".desktop").unwrap_or(&desktop_id);
+            let locales = fde::get_languages_from_env();
+
+            let desktop_entries = fde::Iter::new(fde::default_paths())
+                .map(|path| fde::DesktopEntry::from_path(path, Some(&locales)))
+                .filter_map(Result::ok)
+                .collect::<Vec<_>>();
+
+            let appid = fde::unicase::Ascii::new(desktop_id);
+            if let Some(desktop_entry) = fde::find_app_by_id(&desktop_entries, appid) {
+                if let Some(exec) = desktop_entry.exec().map(String::from) {
+                    let appid = desktop_entry.appid.clone();
+                    let prefers_non_default_gpu = desktop_entry.prefers_non_default_gpu();
+                    let terminal = desktop_entry.terminal();
                     tokio::spawn(async move {
-                        cosmic::desktop::spawn_desktop_exec(
-                            &exec,
-                            Vec::<(&str, &str)>::new(),
-                            Some(&desktop_id),
-                            false,
-                        )
-                        .await;
+                        let gpu_pref = if prefers_non_default_gpu {
+                            GpuPreference::NonDefault
+                        } else {
+                            GpuPreference::Default
+                        };
+
+                        let mut envs = Vec::new();
+
+                        if let Some(gpu_envs) = try_get_gpu_envs(gpu_pref).await {
+                            envs.extend(gpu_envs);
+                        }
+
+                        cosmic::desktop::spawn_desktop_exec(&exec, envs, Some(&appid), terminal)
+                            .await;
                     });
                 }
-                action::none()
-            },
-        )
+            }
+        });
     }
 
     fn operation(&mut self, operation: Operation) {
