@@ -493,23 +493,31 @@ impl App {
             if let Some(desktop_entry) = fde::find_app_by_id(&desktop_entries, appid) {
                 if let Some(exec) = desktop_entry.exec().map(String::from) {
                     let appid = desktop_entry.appid.clone();
-                    let prefers_non_default_gpu = desktop_entry.prefers_non_default_gpu();
+                    let gpu_pref = if desktop_entry.prefers_non_default_gpu() {
+                        GpuPreference::NonDefault
+                    } else {
+                        GpuPreference::Default
+                    };
                     let terminal = desktop_entry.terminal();
                     tokio::spawn(async move {
-                        let gpu_pref = if prefers_non_default_gpu {
-                            GpuPreference::NonDefault
-                        } else {
-                            GpuPreference::Default
-                        };
-
                         let mut envs = Vec::new();
 
                         if let Some(gpu_envs) = try_get_gpu_envs(gpu_pref).await {
                             envs.extend(gpu_envs);
                         }
 
-                        cosmic::desktop::spawn_desktop_exec(&exec, envs, Some(&appid), terminal)
-                            .await;
+                        std::thread::spawn(move || {
+                            tokio::runtime::Builder::new_current_thread()
+                                .enable_io()
+                                .build()
+                                .unwrap()
+                                .block_on(cosmic::desktop::spawn_desktop_exec(
+                                    &exec,
+                                    envs,
+                                    Some(&appid),
+                                    terminal,
+                                ));
+                        });
                     });
                 }
             }
