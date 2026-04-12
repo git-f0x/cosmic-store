@@ -96,3 +96,5 @@ system-packages-summary =
 system-packages = ਸਿਸਟਮ ਪੈਕੇਜ
 comment = COSMIC ਡੈਸਕਟਾਪ ਲਈ ਐਪਲੀਕੇਸ਼ਨ ਸਟੋਰ
 keywords = ਐਪ;ਸਾਫਟਵੇਅਰ;ਸਟੋਰ;ਦੁਕਾਨ;
+faq = ਸਵਾਲ-ਜਵਾਬ
+flatpak-runtimes = ਫਲੈਟਪੈਕ ਰਨਟਾਈਮ

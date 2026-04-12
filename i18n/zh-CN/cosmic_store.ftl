@@ -2,7 +2,7 @@ app-name = COSMIC 软件商店
 back = 返回
 cancel = 取消
 check-for-updates = 检查更新
-checking-for-updates = 正在检查更新...
+checking-for-updates = 正在检查更新…
 close = 关闭
 install = 安装
 no-installed-applications = 没有已安装的应用程序。
@@ -35,7 +35,7 @@ codec-installed = 软件包已安装。
 details = 详情
 dismiss = 清除消息
 operations-running = { $running } 个操作正在运行（{ $percent }%）…
-operations-running-finished = { $running } 个操作正在运行（{ $percent }%），{ $finished } 个已完成...
+operations-running-finished = { $running } 个操作正在运行（{ $percent }%），{ $finished } 个已完成…
 # Repository add error dialog
 repository-add-error-title = "添加远程仓库失败"
 # Repository remove dialog
@@ -46,9 +46,9 @@ repository-remove-body =
        *[other] 删除 "{ $dependency }" 以及
     } 以下应用程序。如果再次添加远程仓库，需要重新安装它们。
 add = 添加
-adding = 正在添加...
+adding = 正在添加…
 remove = 移除
-removing = 正在移除...
+removing = 正在移除…
 # Uninstall Dialog
 uninstall-app = 确定要卸载 { $name } ？
 uninstall-app-warning = 卸载 { $name } 不会保留任何数据。
@@ -79,7 +79,7 @@ recently-updated = 最近更新
 development-tools = 开发工具
 scientific-tools = 科学工具
 productivity-apps = 效率应用
-graphics-and-photography-tools = 图形和设计工具
+graphics-and-photography-tools = 图形与设计工具
 social-networking-apps = 社交网络应用
 games = 游戏
 music-and-video-apps = 音乐与视频应用

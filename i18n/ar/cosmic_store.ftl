@@ -57,13 +57,13 @@ uninstall-app-warning = سيؤدي إلغاء تنصيب { $name } إلى حذف
 # Nav Pages
 explore = استكشف
 create = أنشئ
-work = اعمل
+work = عمل
 develop = تطوير
 learn = تعلم
 game = لعبة
 relax = استرخِ
 socialize = اجتمِع
-utilities = الأدوات المساعدة
+utilities = الأدوات المُساعِدة
 applets = بريمجات
 installed-apps = التطبيقات المنصبة
 updates = التحديثات

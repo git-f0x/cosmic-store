@@ -35,7 +35,7 @@ recently-updated = Нещодавно оновлені
 development-tools = Розробницькі інструменти
 scientific-tools = Наукові інструменти
 productivity-apps = Засоби для роботи
-graphics-and-photography-tools = Дизаїн та мистецтво
+graphics-and-photography-tools = Дизайн та мистецтво
 social-networking-apps = Соціальні застосунки
 games = Ігри
 music-and-video-apps = Звук та відео
@@ -90,7 +90,7 @@ applets = Віджети
 enable-flathub-cosmic = Будь ласка, увімкніть Flathub та COSMIC Flatpak, щоб переглянути доступні віджети.
 manage-repositories = Керувати сховищами
 made-for-cosmic = Зроблено для COSMIC
-monthly-downloads = завантажень за місяць з Flathub
+monthly-downloads = Завантажень за місяць
 licenses = Ліцензії
 proprietary = Пропрієтарна
 bug-tracker = Повідомити про ваду
@@ -136,6 +136,6 @@ system-packages-summary =
        *[other] { $count } пакетів
     }
 system-packages = Системні пакети
-flatpak-runtimes = Середовища Flatpak
+flatpak-runtimes = Інструменти Flatpak
 keywords = Застосунок;Програма;Крам;Крамниця;Магазин;
 comment = Крамниця застосунків для середовища COSMIC
