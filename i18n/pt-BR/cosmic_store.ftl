@@ -72,13 +72,13 @@ updates = Atualizações
 enable-flathub-cosmic = Por favor, habilite o Flathub e o COSMIC Flatpak para ver os miniaplicativos disponíveis.
 manage-repositories = Gerenciar repositórios
 # Explore Pages
-editors-choice = Escolha dos Editores
-popular-apps = Aplicativos Populares
+editors-choice = Escolha dos editores
+popular-apps = Aplicativos populares
 made-for-cosmic = Feitos para o COSMIC
-new-apps = Novos Aplicativos
-recently-updated = Atualizados Recentemente
-development-tools = Ferramentas de Desenvolvimento
-scientific-tools = Ferramentas Científicas
+new-apps = Novos aplicativos
+recently-updated = Atualizados recentemente
+development-tools = Ferramentas de desenvolvimento
+scientific-tools = Ferramentas científicas
 productivity-apps = Aplicativos de produtividade
 graphics-and-photography-tools = Ferramentas de gráficos e de fotografia
 social-networking-apps = Aplicativos de redes sociais
@@ -89,7 +89,7 @@ apps-for-learning = Aplicativos educacionais
 source-installed = { $source } (instalado)
 developer = Desenvolvedor
 app-developers = Desenvolvedores de { $app }
-monthly-downloads = Downloads Mensais
+monthly-downloads = Downloads mensais no Flathub
 licenses = Licenças
 proprietary = Proprietário
 
@@ -152,6 +152,6 @@ system-packages-summary =
         [one] { $count } pacote
        *[other] { $count } pacotes
     }
-system-packages = Pacotes do Sistema
-flatpak-runtimes = Runtimes Flatpak
+system-packages = Pacotes do sistema
+flatpak-runtimes = Ambientes de execução de Flatpak
 keywords = Aplicativo;Software;Loja;App;
