@@ -1,6 +1,6 @@
 app-name = COSMIC Store
 back = Tilbage
-cancel = Annuller
+cancel = Afbryd
 check-for-updates = Søg efter opdateringer
 checking-for-updates = Søger efter opdateringer...
 install = Installer
