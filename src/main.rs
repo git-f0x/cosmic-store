@@ -7,7 +7,6 @@ use cosmic::{
     app::{Core, CosmicFlags, Settings, Task, context_drawer},
     cosmic_config::{self, CosmicConfigEntry},
     cosmic_theme, executor,
-    iced::widget::scrollable::AbsoluteOffset,
     iced::{
         Alignment, Length, Limits, Size, Subscription,
         core::SmolStr,
@@ -18,7 +17,8 @@ use cosmic::{
         widget::scrollable,
         window::{self, Event as WindowEvent},
     },
-    theme, widget,
+    theme,
+    widget::{self, column, container, row, text},
 };
 use freedesktop_desktop_entry as fde;
 use futures::StreamExt;
@@ -1152,7 +1152,7 @@ impl App {
             match self.scroll_views.get(&scroll_context) {
                 Some(viewport) => {
                     let offset = viewport.absolute_offset();
-                    AbsoluteOffset {
+                    scrollable::AbsoluteOffset {
                         x: Some(offset.x),
                         y: Some(offset.y),
                     }
@@ -1666,12 +1666,12 @@ impl App {
         if !self.pending_operations.is_empty() {
             let mut section = widget::settings::section().title(fl!("pending"));
             for (_id, (op, progress)) in self.pending_operations.iter().rev() {
-                section = section.add(widget::column![
+                section = section.add(column![
                     widget::determinate_linear(*progress)
                         .width(Length::Fill)
                         .girth(progress_bar_height),
                     widget::space::vertical().height(space_xs),
-                    widget::text(op.pending_text((*progress * 100.0) as i32)),
+                    text(op.pending_text((*progress * 100.0) as i32)),
                 ]);
             }
             children.push(section.into());
@@ -1680,9 +1680,9 @@ impl App {
         if !self.failed_operations.is_empty() {
             let mut section = widget::settings::section().title(fl!("failed"));
             for (_id, (op, progress, error)) in self.failed_operations.iter().rev() {
-                section = section.add(widget::column::with_children([
-                    widget::text(op.pending_text((*progress * 100.0) as i32)).into(),
-                    widget::text(error).into(),
+                section = section.add(column::with_children([
+                    text(op.pending_text((*progress * 100.0) as i32)).into(),
+                    text(error).into(),
                 ]));
             }
             children.push(section.into());
@@ -1691,18 +1691,16 @@ impl App {
         if !self.complete_operations.is_empty() {
             let mut section = widget::settings::section().title(fl!("complete"));
             for (_id, op) in self.complete_operations.iter().rev() {
-                section = section.add(widget::text(op.completed_text()));
+                section = section.add(text(op.completed_text()));
             }
             children.push(section.into());
         }
 
         if children.is_empty() {
-            children.push(widget::text::body(fl!("no-operations")).into());
+            children.push(text::body(fl!("no-operations")).into());
         }
 
-        widget::column::with_children(children)
-            .spacing(space_m)
-            .into()
+        column::with_children(children).spacing(space_m).into()
     }
 
     fn release_notes(&self, index: usize) -> Element<'_, Message> {
@@ -1730,7 +1728,7 @@ impl App {
             };
 
             // Display list of system packages with version info
-            let mut package_list = widget::column::with_capacity(refs.len()).spacing(space_xxs);
+            let mut package_list = column::with_capacity(refs.len()).spacing(space_xxs);
 
             for ref_name in refs {
                 let installed_version = package
@@ -1755,11 +1753,11 @@ impl App {
                     (None, None) => ref_name.to_string(),
                 };
 
-                package_list = package_list.push(widget::text(version_text));
+                package_list = package_list.push(text(version_text));
             }
 
-            return widget::column::with_capacity(2)
-                .push(widget::text::title4(fl!("system-package-updates")))
+            return column::with_capacity(2)
+                .push(text::title4(fl!("system-package-updates")))
                 .push(widget::scrollable(package_list))
                 .width(Length::Fill)
                 .spacing(space_s)
@@ -1784,10 +1782,10 @@ impl App {
                 })
                 .unwrap_or(("", None, None, None))
         };
-        widget::column::with_capacity(3)
+        column::with_capacity(3)
             .push(
-                widget::column::with_capacity(2)
-                    .push(widget::text::title4(format!(
+                column::with_capacity(2)
+                    .push(text::title4(format!(
                         "{} {}",
                         fl!("latest-version"),
                         version
@@ -1800,13 +1798,13 @@ impl App {
                                     .to_string()
                             })
                         })
-                        .map(widget::text),
+                        .map(text),
                     ),
             )
-            .push(widget::scrollable(widget::text(
+            .push(widget::scrollable(text(
                 summary.unwrap_or_else(|| fl!("no-description")),
             )))
-            .push_maybe(url.map(widget::text))
+            .push_maybe(url.map(text))
             .width(Length::Fill)
             .spacing(space_s)
             .into()
@@ -1871,14 +1869,14 @@ impl App {
 
     fn repositories(&self) -> Element<'_, Message> {
         if !cfg!(feature = "flatpak") {
-            return widget::text(fl!("no-flatpak")).into();
+            return text(fl!("no-flatpak")).into();
         }
 
         let sources = self.sources();
         let mut recommended = widget::settings::section().title(fl!("recommended-flatpak-sources"));
-        let mut custom = widget::settings::section().header(widget::column::with_children([
-            widget::text::heading(fl!("custom-flatpak-sources")).into(),
-            widget::text::body(fl!("import-flatpakrepo")).into(),
+        let mut custom = widget::settings::section().header(column::with_children([
+            text::heading(fl!("custom-flatpak-sources")).into(),
+            text::body(fl!("import-flatpakrepo")).into(),
         ]));
 
         let mut has_custom_sources = false;
@@ -1918,7 +1916,7 @@ impl App {
                 .find(|x| x.0 == source.backend_name && x.1 == source.id)
                 .map(|x| x.2)
             {
-                Some(adding) => item.control(widget::text(if adding {
+                Some(adding) => item.control(text(if adding {
                     fl!("adding")
                 } else {
                     fl!("removing")
@@ -1958,10 +1956,10 @@ impl App {
         }
         // Add list item when no custom sources exist
         if !has_custom_sources {
-            custom = custom.add(widget::text::body(fl!("no-custom-flatpak-sources")));
+            custom = custom.add(text::body(fl!("no-custom-flatpak-sources")));
         }
 
-        let custom = widget::column::with_children([
+        let custom = column::with_children([
             custom.into(),
             widget::button::standard(fl!("import"))
                 .on_press_maybe(if self.repos_changing.is_empty() {
@@ -1969,7 +1967,7 @@ impl App {
                 } else {
                     None
                 })
-                .apply(widget::container)
+                .apply(container)
                 .width(Length::Fill)
                 .align_x(Alignment::End)
                 .into(),
@@ -2283,7 +2281,7 @@ impl Application for App {
                         scrollable_height += 0.0;
                     }
                     //TODO: show icons
-                    list = list.add(widget::text(name));
+                    list = list.add(text(name));
                     scrollable_height += 32.0;
                 }
                 widget::dialog()
@@ -2418,12 +2416,12 @@ impl Application for App {
             .width(Length::Fill)
             .girth(progress_bar_height);
 
-        let container = widget::column::with_children([
+        let container = column::with_children([
             progress_bar.into(),
             widget::space::vertical().height(space_xs).into(),
-            widget::text::body(title).into(),
+            text::body(title).into(),
             widget::space::vertical().height(space_s).into(),
-            widget::row::with_children([
+            row::with_children([
                 widget::button::link(fl!("details"))
                     .on_press(Message::ToggleContextPage(ContextPage::Operations))
                     .padding(0)
@@ -2470,7 +2468,7 @@ impl Application for App {
                 let manage_repositories = widget::tooltip(
                     widget::button::icon(widget::icon::from_name("application-menu-symbolic"))
                         .on_press(Message::ToggleContextPage(ContextPage::Repositories)),
-                    widget::text(fl!("manage-repositories")),
+                    text(fl!("manage-repositories")),
                     widget::tooltip::Position::Bottom,
                 );
 
@@ -2498,7 +2496,7 @@ impl Application for App {
     /// Creates a view after each update.
     fn view(&self) -> Element<'_, Self::Message> {
         let cosmic_theme::Spacing {
-            space_xl,
+            space_l,
             space_m,
             space_s,
             space_xs,
@@ -2510,22 +2508,18 @@ impl Application for App {
             Mode::Normal => widget::responsive(move |mut size| {
                 size.width = size.width.min(MAX_GRID_WIDTH);
                 widget::id_container(
-                    widget::column::with_capacity(2)
+                    column::with_capacity(2)
                         .spacing(space_xxs)
-                        .push_maybe(self.back_button().map(|element| {
-                            element
-                                .apply(widget::container)
-                                .padding([0, space_xl, 0, space_xl])
-                                .max_width(MAX_GRID_WIDTH)
-                                .apply(widget::container)
-                                .align_x(Alignment::Center)
-                        }))
+                        .push_maybe(
+                            self.back_button()
+                                .map(|element| element.apply(container).padding([0, space_l])),
+                        )
                         .push(
                             self.view_responsive(size)
-                                .apply(widget::container)
-                                .padding([0, space_xl, space_m, space_xl])
+                                .apply(container)
+                                .padding([0, space_l, space_m, space_l])
                                 .max_width(MAX_GRID_WIDTH)
-                                .apply(widget::container)
+                                .apply(container)
                                 .align_x(Alignment::Center)
                                 .apply(widget::scrollable)
                                 .on_scroll(Message::ScrollView),
@@ -2553,34 +2547,34 @@ impl Application for App {
                     let mut list = widget::list_column();
 
                     for (_id, (op, progress)) in self.pending_operations.iter().rev() {
-                        list = list.add(widget::column::with_children([
+                        list = list.add(column::with_children([
                             widget::determinate_linear(*progress)
                                 .width(Length::Fill)
                                 .girth(Length::Fixed(4.0))
                                 .into(),
                             widget::space::vertical().height(space_xs).into(),
-                            widget::text(op.pending_text((*progress * 100.0) as i32)).into(),
+                            text(op.pending_text((*progress * 100.0) as i32)).into(),
                         ]));
                     }
 
                     for (_id, (op, progress, error)) in self.failed_operations.iter().rev() {
-                        list = list.add(widget::column::with_children([
-                            widget::text(op.pending_text((*progress * 100.0) as i32)).into(),
-                            widget::text(error).into(),
+                        list = list.add(column::with_children([
+                            text(op.pending_text((*progress * 100.0) as i32)).into(),
+                            text(error).into(),
                         ]));
                     }
 
                     for (_id, op) in self.complete_operations.iter().rev() {
-                        list = list.add(widget::text(op.completed_text()));
+                        list = list.add(text(op.completed_text()));
                     }
 
                     dialog = dialog.control(widget::scrollable(list));
                     if self.pending_operations.is_empty() {
                         let code = if self.failed_operations.is_empty() {
-                            dialog = dialog.control(widget::text(fl!("codec-installed")));
+                            dialog = dialog.control(text(fl!("codec-installed")));
                             GStreamerExitCode::Success
                         } else {
-                            dialog = dialog.control(widget::text(fl!("codec-error")));
+                            dialog = dialog.control(text(fl!("codec-error")));
                             GStreamerExitCode::Error
                         };
                         dialog = dialog.secondary_action(
@@ -2594,10 +2588,10 @@ impl Application for App {
                             let mut list = widget::list_column();
                             for (i, result) in results.iter().enumerate() {
                                 list = list.add(
-                                    widget::row::with_children([
-                                        widget::column::with_children([
-                                            widget::text::body(&result.info.name).into(),
-                                            widget::text::caption(&result.info.summary).into(),
+                                    row::with_children([
+                                        column::with_children([
+                                            text::body(&result.info.name).into(),
+                                            text::caption(&result.info.summary).into(),
                                         ])
                                         .into(),
                                         widget::space::horizontal().into(),
@@ -2622,16 +2616,16 @@ impl Application for App {
                                 );
                             }
                             dialog = dialog.control(widget::scrollable(list)).control(
-                                widget::row::with_children([
+                                row::with_children([
                                     widget::icon::from_name("dialog-warning").size(16).into(),
-                                    widget::text(fl!("codec-footer")).into(),
+                                    text(fl!("codec-footer")).into(),
                                 ])
                                 .spacing(space_xxs),
                             );
                         }
                         None => {
                             //TODO: loading indicator?
-                            //column = column.push(widget::text("Loading..."));
+                            //column = column.push(text("Loading..."));
                         }
                     }
                     let mut install_button = widget::button::suggested(fl!("install"));
